@@ -1,0 +1,72 @@
+CREATE TABLE SALESMAN (
+    Salesman_id INT PRIMARY KEY,
+    Name VARCHAR(50),
+    City VARCHAR(50),
+    Commission DECIMAL(5,2)
+);
+
+CREATE TABLE CUSTOMER (
+    C_id INT PRIMARY KEY,
+    Cust_Name VARCHAR(50),
+    City VARCHAR(50),
+    Grade INT,
+    Salesman_id INT,
+    FOREIGN KEY (Salesman_id) REFERENCES SALESMAN(Salesman_id)
+);
+
+CREATE TABLE ORDERS (
+    Ord_No INT PRIMARY KEY,
+    Purchase_Amt DECIMAL(10,2),
+    Ord_Date DATE,
+    C_id INT,
+    S_id INT,
+    FOREIGN KEY (C_id) REFERENCES CUSTOMER(C_id),
+    FOREIGN KEY (S_id) REFERENCES SALESMAN(Salesman_id)
+);
+
+
+-- SALESMAN
+INSERT INTO SALESMAN VALUES
+(1, 'Ravi', 'Bangalore', 0.15),
+(2, 'Amit', 'Mumbai', 0.12),
+(3, 'John', 'Delhi', 0.10),
+(4, 'Alice', 'Bangalore', 0.18),
+(5, 'Mark', 'Chennai', 0.14);
+
+-- CUSTOMER
+INSERT INTO CUSTOMER VALUES
+(101, 'Arun', 'Bangalore', 200, 1),
+(102, 'Meena', 'Bangalore', 150, 1),
+(103, 'Suresh', 'Mumbai', 300, 2),
+(104, 'Leena', 'Delhi', 250, 3),
+(105, 'Rita', 'Chennai', 180, 5);
+
+-- ORDERS
+INSERT INTO ORDERS VALUES
+(1001, 5000.00, '2024-12-01', 101, 1),
+(1002, 7000.00, '2024-12-02', 102, 1),
+(1003, 6500.00, '2024-12-03', 103, 2),
+(1004, 4000.00, '2024-12-04', 104, 3),
+(1005, 9000.00, '2024-12-05', 105, 5);
+
+SELECT COUNT(*) 
+FROM CUSTOMER 
+WHERE Grade > (
+    SELECT AVG(Grade) 
+    FROM CUSTOMER 
+    WHERE City = 'Bangalore'
+);
+
+SELECT S.Salesman_id, S.Name 
+FROM SALESMAN S
+JOIN CUSTOMER C ON S.Salesman_id = C.Salesman_id
+GROUP BY S.Salesman_id, S.Name
+HAVING COUNT(C.C_id) > 1;
+
+CREATE VIEW Top_Salesman AS
+SELECT S.*
+FROM SALESMAN S
+JOIN ORDERS O ON S.Salesman_id = O.S_id
+WHERE O.Purchase_Amt = (
+    SELECT MAX(Purchase_Amt) FROM ORDERS
+);
